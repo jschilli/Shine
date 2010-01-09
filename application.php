@@ -34,6 +34,9 @@
 			$app->return_url       = $_POST['return_url'];
 			$app->fs_security_key  = $_POST['fs_security_key'];
 			$app->tweet_terms      = $_POST['tweet_terms'];
+			$app->cf_product_code  = $_POST['cf_product_code'];
+			$app->cf_license_url   = $_POST['cf_license_url'];
+			
 			$app->update();
 			redirect('application.php?id=' . $app->id);
 		}
@@ -60,6 +63,8 @@
 			$return_url       = $_POST['return_url'];
 			$fs_security_key  = $_POST['fs_security_key'];
 			$tweet_terms      = $_POST['tweet_terms'];
+			$cf_product_code  = $_POST['cf_product_code'];
+			$cf_license_url   = $_POST['cf_license_url'];
 		}
 	}
 	else
@@ -85,6 +90,9 @@
 		$return_url       = $app->return_url;
 		$fs_security_key  = $app->fs_security_key;
 		$tweet_terms      = $app->tweet_terms;
+		$cf_product_code  = $app->cf_product_code;
+		$cf_license_url   = $app->cf_license_url;
+		
 	}
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
@@ -206,7 +214,18 @@
 									<label for="custom_salt">Custom License Salt (if not using Aquatic Prime)</label>
                                     <textarea name="custom_salt" id="custom_salt" class="text"><?PHP echo $custom_salt ?></textarea>
                                 </p>
+								<h3>Cocoa Fob</h3>
 
+  							    <p>
+									<label for="cf_product_code">CocoaFob Product Code</label>
+                                    <input type="text" class="text" name="cf_product_code" id="cf_product_code" value="<?PHP echo $cf_product_code; ?>">
+									<span class="info">Product Code used for CocoaFob licenses</span>
+                                </p>
+  							    <p>
+									<label for="cf_license_url">CocoaFob License URL</label>
+                                    <input type="text" class="text" name="cf_license_url" id="cf_license_url" value="<?PHP echo $cf_license_url; ?>">
+									<span class="info">URL Prefix for CocoaFob licenses e.g. com.domainname.appname.lic</span>
+                                </p>
 								<hr>
 								
                                 <h3>PayPal</h3>

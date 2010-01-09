@@ -28,7 +28,7 @@
     {
         public function __construct($id = null)
         {
-            parent::__construct('applications', array('name', 'link', 'bundle_name', 's3key', 's3pkey', 's3bucket', 's3path', 'sparkle_key', 'sparkle_pkey', 'ap_key', 'ap_pkey', 'from_email', 'email_subject', 'email_body', 'license_filename', 'custom_salt', 'license_type', 'return_url', 'fs_security_key', 'i_use_this_key', 'tweet_terms'), $id);
+            parent::__construct('applications', array('name', 'link', 'bundle_name', 's3key', 's3pkey', 's3bucket', 's3path', 'sparkle_key', 'sparkle_pkey', 'ap_key', 'ap_pkey', 'from_email', 'email_subject', 'email_body', 'license_filename', 'custom_salt', 'license_type', 'return_url', 'fs_security_key', 'i_use_this_key', 'tweet_terms', 'cf_product_code', 'cf_license_url'), $id);
         }
 
 		public function versions()
@@ -84,10 +84,19 @@
 			$db = Database::getDatabase();
 			return $db->getValue("SELECT COUNT(*) FROM feedback WHERE appname = '{$this->name}' AND `type` = 'feature' AND new = 1");
 		}
+		
+		function getCFLicenseURL($order)
+		{
+			$composite_name = $order->first_name . ' ' . $order->last_name;
+			
+			return $this->cf_license_url  . '://' . base64_encode($composite_name) . '/' . $order->license;
+		}
 
 		function getBody($order)
 		{
-			return str_replace(array('{first_name}', '{last_name}', '{payer_email}', '{license}'), array($order->first_name, $order->last_name, $order->payer_email, $order->license), $this->email_body);
+			$cf_license_url = $this->getCFLicenseURL($order);
+			$mail_body = str_replace('{cf_license_url}', $cf_license_url, $this->email_body);
+			return str_replace(array('{first_name}', '{last_name}', '{payer_email}', '{license}'), array($order->first_name, $order->last_name, $order->payer_email, $order->license), $mail_body);
 		}
 		
 		function ordersPerMonth()
@@ -224,10 +233,10 @@
 				$priv = openssl_pkey_get_private($app->ap_pkey);
 
 				$signedData = '';
-				$product_code = $app->custom_salt; // overload custom_salt -> s/b CF Product Code
+				$product_code = $app->cf_product_code; 
 				$name = $this->first_name . ' ' . $this->last_name;
 				$compositeLicenseCode = make_license_source($product_code,$name);
-			//	error_log("[$productCode] - [$name] -- [$compositeLicenseCode]");
+				error_log("[$product_code] - [$name] -- [$compositeLicenseCode]");
 				openssl_sign($compositeLicenseCode, $signature, $priv, OPENSSL_ALGO_DSS1);
 				openssl_free_key($priv);
 				$len = strlen($signature);
@@ -297,7 +306,8 @@
 		{
 			require('Mail.php');
 			require('Mail/mime.php');
-
+			$app = new Application($this->app_id);
+error_log($app->getBody($this));
 			$text = 'Text version of email';
 			$html = '<html><body>HTML version of email</body></html>';
 			$file = '/home/richard/example.php';
