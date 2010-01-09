@@ -188,16 +188,17 @@
 									<label for="license_type">License Type</label><br>
                                     <select name="license_type" id="license_type">
 										<option <?PHP if($license_type == 'ap') echo 'selected="selected"'; ?> value="ap">Aquatic Prime</option>
+										<option <?PHP if($license_type == 'cf') echo 'selected="selected"'; ?> value="cf">CocoaFob</option>
 										<option <?PHP if($license_type == 'custom') echo 'selected="selected"'; ?> value="custom">Custom</option>
 									</select>
                                 </p>
 
                                 <p>
-									<label for="ap_key">Aquatic Prime Public Key</label>
+									<label for="ap_key">Aquatic Prime/CocoaFob Public Key</label>
                                     <textarea name="ap_key" id="ap_key" class="text"><?PHP echo $ap_key ?></textarea>
                                 </p>
                                 <p>
-									<label for="ap_pkey">Aquatic Prime Private Key</label>
+									<label for="ap_pkey">Aquatic Prime/CocoaFob Private Key</label>
                                     <textarea name="ap_pkey" id="ap_pkey" class="text"><?PHP echo $ap_pkey ?></textarea>
                                 </p>
 

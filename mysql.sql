@@ -35,7 +35,7 @@ CREATE TABLE `applications` (
   `email_body` text character set utf8 collate utf8_unicode_ci NOT NULL,
   `license_filename` varchar(64) character set utf8 collate utf8_unicode_ci NOT NULL,
   `custom_salt` text character set utf8 collate utf8_unicode_ci NOT NULL,
-  `license_type` enum('ap','custom') character set utf8 collate utf8_unicode_ci NOT NULL,
+  `license_type` enum('ap','cf','custom') character set utf8 collate utf8_unicode_ci NOT NULL,
   `return_url` varchar(255) NOT NULL,
   `fs_security_key` varchar(45) NOT NULL,
   `i_use_this_key` varchar(45) NOT NULL,

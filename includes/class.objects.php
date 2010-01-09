@@ -158,6 +158,8 @@
 			$app = new Application($this->app_id);
 			if($app->license_type == 'ap')
 				$this->generateLicenseAP();
+			else if($app->license_type=='cf') 
+					$this->generateLicenseCF();
 			else
 				$this->generateLicenseCustom();
 		}
@@ -214,11 +216,40 @@
 			$this->update();
 		}
 		
+			function generateLicenseCF()
+			{
+			
+				$app = new Application($this->app_id);
+
+				$priv = openssl_pkey_get_private($app->ap_pkey);
+
+				$signedData = '';
+				$product_code = $app->custom_salt; // overload custom_salt -> s/b CF Product Code
+				$name = $this->first_name . ' ' . $this->last_name;
+				$compositeLicenseCode = make_license_source($product_code,$name);
+			//	error_log("[$productCode] - [$name] -- [$compositeLicenseCode]");
+				openssl_sign($compositeLicenseCode, $signature, $priv, OPENSSL_ALGO_DSS1);
+				openssl_free_key($priv);
+				$len = strlen($signature);
+
+				$b32 = encode($signature);
+			  	// # Replace Os with 8s and Is with 9s
+			  	// # See http://members.shaw.ca/akochoi-old/blog/2004/11-07/index.html
+				$b32 =  str_replace('O', '8', $b32);
+				$b32 =  str_replace('I', '9', $b32);
+				$b32 = join("-",str_split($b32,5));
+		
+				$this->license = $b32;
+				$this->update();
+			}
+		
 		function emailLicense()
 		{
 			$app = new Application($this->app_id);
 			if($app->license_type == 'ap')
 				$this->emailLicenseAP();
+			else if($app->license_type=='cf') 
+				$this->emailLicenseCF();
 			else
 				$this->emailLicenseCustom();
 		}
@@ -260,6 +291,49 @@
 		    $headers .= "--$boundary--";
 
 			mail($this->payer_email, $app->email_subject, '', utf8_encode($headers));
+		}
+		
+		public function emailLicenseCF()
+		{
+			require('Mail.php');
+			require('Mail/mime.php');
+
+			$text = 'Text version of email';
+			$html = '<html><body>HTML version of email</body></html>';
+			$file = '/home/richard/example.php';
+			$crlf = "\n";
+			$hdrs = array(
+			              'From'    => 'orders@manicwave.com',
+			              'Subject' => 'Test mime message'
+			              );
+
+			$mime = new Mail_mime($crlf);
+
+			$mime->setTXTBody($text);
+			$mime->setHTMLBody($html);
+			$mime->addAttachment($file, 'text/plain');
+
+			//do not ever try to call these lines in reverse order
+			$body = $mime->get();
+			$hdrs = $mime->headers($hdrs);
+
+			$mail =& Mail::factory('mail');
+			$mail->send($this->payer_email, $hdrs, $body);
+			
+			// $app = new Application($this->app_id);
+			// 	
+			//  			$hdrs = array('From' => $app->from_email, 'Subject' => $app->email_subject);
+			// 	
+			// $mime = new Mail_mime("\r\n");
+			// $mime->setTXTBody($app->getBody($this));
+			// $mime->setHTMLBody('');
+			// // $mime->addAttachment($tmp, 'application/octet-stream', $app->license_filename, true, 'base64');
+			// 	
+			// $body = $mime->get();
+			// $hdrs = $mime->headers($hdrs);
+			// 	
+			// $smtp =& Mail::factory('smtp', array('host' => SMTP_HOST, 'port' => SMTP_PORT, 'auth' => true, 'username' => SMTP_USERNAME, 'password' => SMTP_PASSWORD));
+			// $mail = $smtp->send($this->payer_email, $hdrs, $body);
 		}
 
 		// This method is an alternative to your box's native sendmail. If you have access, I'd recommend using

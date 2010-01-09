@@ -1,0 +1,4 @@
+Changed mysql.sql to add cf enumeration value
+
+ALTER TABLE `shine`.`applications` MODIFY COLUMN `license_type` ENUM('ap','cf','custom');
+
