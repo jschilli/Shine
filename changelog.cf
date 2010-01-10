@@ -3,7 +3,8 @@ CocoaFob Support
 Changed mysql.sql to add cf enumeration value
 
 ALTER TABLE `shine`.`applications` MODIFY COLUMN `license_type` ENUM('ap','cf','custom');
-ALTER TABLE `shine`.`applications` ADD COLUMN `cf_license_url` TEXT DEFAULT NULL AFTER `cf_product_code`;
+ALTER TABLE `shine`.`applications` ADD COLUMN `cf_product_code` VARCHAR(45) DEFAULT NULL AFTER `tweet_terms`;
+ALTER TABLE `shine`.`applications` ADD COLUMN `cf_license_url` VARCHAR(45) DEFAULT NULL AFTER `cf_product_code`;
 
 OpenFeedback Mail Notifications
 * Adding support for sending email notification to external system when OpenFeedback is received

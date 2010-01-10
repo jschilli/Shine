@@ -302,48 +302,40 @@
 			mail($this->payer_email, $app->email_subject, '', utf8_encode($headers));
 		}
 		
+		// Open issue - need seperate body for HTML formatted email
+		// We can either split the email field with a marker or (easier/cleaner) add a secondary field to the Application object
+		//
 		public function emailLicenseCF()
 		{
 			require('Mail.php');
 			require('Mail/mime.php');
 			$app = new Application($this->app_id);
-error_log($app->getBody($this));
-			$text = 'Text version of email';
-			$html = '<html><body>HTML version of email</body></html>';
-			$file = '/home/richard/example.php';
+			$text = $app->getBody($this);
+			$html = "<html><body>" . $text . "</body></html>";
+		
 			$crlf = "\n";
 			$hdrs = array(
-			              'From'    => 'orders@manicwave.com',
-			              'Subject' => 'Test mime message'
+			              'From'    => $app->from_email,
+			              'Subject' => $app->email_subject
 			              );
-
 			$mime = new Mail_mime($crlf);
 
 			$mime->setTXTBody($text);
 			$mime->setHTMLBody($html);
-			$mime->addAttachment($file, 'text/plain');
+			// $mime->addAttachment($file, 'text/plain');
 
 			//do not ever try to call these lines in reverse order
 			$body = $mime->get();
 			$hdrs = $mime->headers($hdrs);
 
-			$mail =& Mail::factory('mail');
-			$mail->send($this->payer_email, $hdrs, $body);
-			
-			// $app = new Application($this->app_id);
-			// 	
-			//  			$hdrs = array('From' => $app->from_email, 'Subject' => $app->email_subject);
-			// 	
-			// $mime = new Mail_mime("\r\n");
-			// $mime->setTXTBody($app->getBody($this));
-			// $mime->setHTMLBody('');
-			// // $mime->addAttachment($tmp, 'application/octet-stream', $app->license_filename, true, 'base64');
-			// 	
-			// $body = $mime->get();
-			// $hdrs = $mime->headers($hdrs);
-			// 	
-			// $smtp =& Mail::factory('smtp', array('host' => SMTP_HOST, 'port' => SMTP_PORT, 'auth' => true, 'username' => SMTP_USERNAME, 'password' => SMTP_PASSWORD));
-			// $mail = $smtp->send($this->payer_email, $hdrs, $body);
+			$smtp =& Mail::factory('smtp', array('host' => SMTP_HOST, 'port' => SMTP_PORT, 'auth' => true, 'username' => SMTP_USERNAME, 'password' => SMTP_PASSWORD));
+			$mail = $smtp->send("$this->first_name $this->last_name <" . $this->payer_email . ">", $hdrs, $body);
+
+			if (PEAR::isError($mail)) {
+			  echo("<p>" . $mail->getMessage() . "</p>");
+			 } else {
+			  echo("<p>Message successfully sent!</p>");
+			 }
 		}
 
 		// This method is an alternative to your box's native sendmail. If you have access, I'd recommend using

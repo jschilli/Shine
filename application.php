@@ -94,7 +94,7 @@
 		$tweet_terms      = $app->tweet_terms;
 		$cf_product_code  = $app->cf_product_code;
 		$cf_license_url   = $app->cf_license_url;
-		$of_email_notify  = $of_email_notify;
+		$of_email_notify  = $app->of_email_notify;
 		
 	}
 ?>
