@@ -52,6 +52,15 @@
         return $protocol . "://" . $_SERVER['HTTP_HOST'] . $port . $_SERVER['REQUEST_URI'];
     }
 
+	// answers a *full* URL of the specified page inferring (protocol, server, path, query parameters, etc) from the current page
+    function full_url_for_page($page)
+    {
+        $s = empty($_SERVER['HTTPS']) ? '' : ($_SERVER['HTTPS'] == 'on') ? 's' : '';
+        $protocol = substr(strtolower($_SERVER['SERVER_PROTOCOL']), 0, strpos(strtolower($_SERVER['SERVER_PROTOCOL']), '/')) . $s;
+        $port = ($_SERVER['SERVER_PORT'] == '80') ? '' : (":".$_SERVER['SERVER_PORT']);
+        return $protocol . "://" . $_SERVER['HTTP_HOST'] . $port . '/' . $page;
+    }
+
     // Returns an English representation of a past date within the last month
     // Graciously stolen from http://ejohn.org/files/pretty.js
     function time2str($ts)

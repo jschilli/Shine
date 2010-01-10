@@ -36,6 +36,7 @@
 			$app->tweet_terms      = $_POST['tweet_terms'];
 			$app->cf_product_code  = $_POST['cf_product_code'];
 			$app->cf_license_url   = $_POST['cf_license_url'];
+			$app->of_email_notify  = $_POST['of_email_notify'];
 			
 			$app->update();
 			redirect('application.php?id=' . $app->id);
@@ -65,6 +66,7 @@
 			$tweet_terms      = $_POST['tweet_terms'];
 			$cf_product_code  = $_POST['cf_product_code'];
 			$cf_license_url   = $_POST['cf_license_url'];
+			$of_email_notify  = $_POST['of_email_notify'];
 		}
 	}
 	else
@@ -92,6 +94,7 @@
 		$tweet_terms      = $app->tweet_terms;
 		$cf_product_code  = $app->cf_product_code;
 		$cf_license_url   = $app->cf_license_url;
+		$of_email_notify  = $of_email_notify;
 		
 	}
 ?>
@@ -154,6 +157,12 @@
                                     <label for="url">Twitter keywords to search for</label>
                                     <input type="text" class="text" name="tweet_terms" id="tweet_terms" value="<?PHP echo $tweet_terms; ?>">
                                     <span class="info">Seperate with commas</span>
+                                </p>
+
+                                <p>
+                                    <label for="of_email_notify">Open Feedback Notification Address</label>
+                                    <input type="text" class="text" name="of_email_notify" id="of_email_notify" value="<?PHP echo $of_email_notify; ?>">
+                                    <span class="info">Optional email address to send <a href="http://github.com/tylerhall/OpenFeedback/">OpenFeedback</a> notifications</span>
                                 </p>
 
 								<hr>
