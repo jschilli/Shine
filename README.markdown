@@ -1,3 +1,10 @@
+Fork (temporary I hope) of [Shine](http://github.com/tylerhall/Shine) to add support for:
+
+1. [CocoaFob](http://github.com/gbd/cocoafob/) support via my php port [phpFob](http://github.com/jschilli/phpFob).  Support includes CocoaFob license generation and HTML formatted license emails with URL activation.
+2. (in progress) Modification to [OpenFeedback](http://github.com/tylerhall/OpenFeedback) to support email notifications of incoming feedback items.
+
+
+
 ![Shine Logo](http://static.clickontyler.com/blog/shine.png)
 
 Shine is a web-based dashboard for indie Mac developers. It's designed to manage payment and order processing with PayPal and generate and email license files to your users using the [Aquatic Prime](http://www.aquaticmac.com/) framework. It even uploads each revision of your app into Amazon S3 and can produce reports from your users' demographic info (gathered via [Sparkle](http://sparkle.andymatuschak.org/)). It also serves as a central location to collect user feedback, bug reports, and support questions using the [OpenFeedback framework](http://github.com/tylerhall/OpenFeedback/tree/master).
