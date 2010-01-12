@@ -51,18 +51,16 @@
 	
     function sign_file($filename, $keydata)
     {
-       	$filedata = file_get_contents($filename);
-		$hash = openssl_digest($filedata,'sha1',true);
+        $binary_hash = shell_exec('openssl dgst -sha1 -binary < ' . $filename);
+        $hash_tmp_file = tempnam('/tmp', 'foo');
+        file_put_contents($tmp_file, $binary_hash);
 
-		// only bracket the key if it doesn't have the header/trailer already
-		if (strpos($keydata,"-----BEGIN DSA PRIVATE KEY-----\n") != 0)
-			$keydata = "-----BEGIN DSA PRIVATE KEY-----\n" . $keydata . "\n-----END DSA PRIVATE KEY-----\n";
-		$priv = openssl_pkey_get_private($keydata);
+        $key_tmp_file = tempnam('/tmp', 'bar');
+        file_put_contents($key_tmp_file, "-----BEGIN DSA PRIVATE KEY-----\n" . $keydata . "\n-----END DSA PRIVATE KEY-----\n");
 
-		openssl_sign($hash, $signature, $priv, OPENSSL_ALGO_DSS1);
-		openssl_free_key($priv);
+        $signed_data = shell_exec("openssl dgst -dss1 -sign $key_tmp_file < $hash_tmp_file");
 
-		return base64_encode($signature);
+        return base64_encode($signed_data);     
     }
 ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
