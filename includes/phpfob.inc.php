@@ -46,9 +46,6 @@ function make_phpFob_license($license_data, $priv_key)
     $priv = openssl_pkey_get_private($priv_key);
 
     $signedData = '';
-	$x = OPENSSL_ALGO_DSS1;
-	echo $x;
-	error_log("algo is $x");
     openssl_sign($license_data, $signature, $priv, OPENSSL_ALGO_DSS1);
     openssl_free_key($priv);
     $len = strlen($signature);
