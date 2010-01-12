@@ -38,11 +38,37 @@ function  make_license_source($product_code, $name)
   return ($product_code ."," .$name);
 }
 
+/*
+ Aggregate function to create a license code 
+*/
+function make_phpFob_license($license_data, $priv_key)
+{
+    $priv = openssl_pkey_get_private($priv_key);
+
+    $signedData = '';
+	$x = OPENSSL_ALGO_DSS1;
+	echo $x;
+	error_log("algo is $x");
+    openssl_sign($license_data, $signature, $priv, OPENSSL_ALGO_DSS1);
+    openssl_free_key($priv);
+    $len = strlen($signature);
+
+    $b32 = encode($signature);
+    // # Replace Os with 8s and Is with 9s
+    // # See http://members.shaw.ca/akochoi-old/blog/2004/11-07/index.html
+    $b32 =  str_replace('O', '8', $b32);
+    $b32 =  str_replace('I', '9', $b32);
+    $b32 = join("-",str_split($b32,5));
+
+    return $b32;
+}
+
+
 /* from decoder.php */
 function decode_bits ($bits)
 {
   $table = array(
-	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
@@ -68,13 +94,13 @@ function decode_bits ($bits)
 
 function arrayToString($inputArray,$count)
 {
-	$outputString = '';
-	$char = '';
-	for ($i = 0 ; $i < $count;$i++) {
-		$char = chr($inputArray[$i]);
-		$outputString .= $char;
-	}
-	return $outputString;
+    $outputString = '';
+    $char = '';
+    for ($i = 0 ; $i < $count;$i++) {
+        $char = chr($inputArray[$i]);
+        $outputString .= $char;
+    }
+    return $outputString;
 }
 
 function base32_decode_buffer_size ($encodedTextLength)
@@ -86,54 +112,54 @@ function base32_decode_buffer_size ($encodedTextLength)
 
 function base32_decode ($input,$outputLength)
 {
-	$inputLength = strlen($input);
-	$bytes = 0;
+    $inputLength = strlen($input);
+    $bytes = 0;
   $currentByte = 0;
-	$output = '';
-	for ($offset = 0; $offset < $inputLength  && $bytes < $outputLength; $offset += 8)
-	{
-		$output[$bytes] = decode_bits ($input{$offset + 0}) << 3;
-	  $currentByte = decode_bits ($input{$offset + 1});
-	  $output[$bytes] += $currentByte >> 2;
-	  $output[$bytes + 1] = ($currentByte & 0x03) << 6;
+    $output = '';
+    for ($offset = 0; $offset < $inputLength  && $bytes < $outputLength; $offset += 8)
+    {
+        $output[$bytes] = decode_bits ($input{$offset + 0}) << 3;
+      $currentByte = decode_bits ($input{$offset + 1});
+      $output[$bytes] += $currentByte >> 2;
+      $output[$bytes + 1] = ($currentByte & 0x03) << 6;
 
-	  if ($input{$offset + 2} == '='){
-	  	return arrayToString($output,$bytes+1);
-		} else
-	    $bytes++;
+      if ($input{$offset + 2} == '='){
+        return arrayToString($output,$bytes+1);
+        } else
+        $bytes++;
 
-		$output[$bytes] += decode_bits ($input{$offset + 2}) << 1;
-		$currentByte = decode_bits ($input{$offset + 3});
-		$output[$bytes] += $currentByte >> 4;
-		$output[$bytes + 1] = $currentByte << 4;
+        $output[$bytes] += decode_bits ($input{$offset + 2}) << 1;
+        $currentByte = decode_bits ($input{$offset + 3});
+        $output[$bytes] += $currentByte >> 4;
+        $output[$bytes + 1] = $currentByte << 4;
 
-		if ($input{$offset + 4} == '='){
-    	return arrayToString($output,$bytes+1);
-		} else
-	    $bytes++;
+        if ($input{$offset + 4} == '='){
+        return arrayToString($output,$bytes+1);
+        } else
+        $bytes++;
 
-	   $currentByte = decode_bits ($input{$offset + 4});
-	   $output[$bytes] += $currentByte >> 1;
-	   $output[$bytes + 1] = $currentByte << 7;
+       $currentByte = decode_bits ($input{$offset + 4});
+       $output[$bytes] += $currentByte >> 1;
+       $output[$bytes + 1] = $currentByte << 7;
 
-	   if ($input{$offset + 5} == '='){
-	     return arrayToString($output,$bytes+1);
-		 } else
-	     $bytes++;
+       if ($input{$offset + 5} == '='){
+         return arrayToString($output,$bytes+1);
+         } else
+         $bytes++;
 
-	   $output[$bytes] += decode_bits ($input{$offset + 5}) << 2;
-	   $currentByte = decode_bits ($input{$offset + 6});
-	   $output[$bytes] +=  $currentByte >> 3;
-	   $output[$bytes + 1] = ($currentByte & 0x07) << 5;
+       $output[$bytes] += decode_bits ($input{$offset + 5}) << 2;
+       $currentByte = decode_bits ($input{$offset + 6});
+       $output[$bytes] +=  $currentByte >> 3;
+       $output[$bytes + 1] = ($currentByte & 0x07) << 5;
 
-	  if ($input{$offset + 7} == '='){
-	    return arrayToString($output,$bytes+1);
-		} else
-	    $bytes++;
+      if ($input{$offset + 7} == '='){
+        return arrayToString($output,$bytes+1);
+        } else
+        $bytes++;
 
-	   $output[$bytes] += decode_bits ($input{$offset + 7}) & 0x1F;
-	   $bytes++;
-	}
+       $output[$bytes] += decode_bits ($input{$offset + 7}) & 0x1F;
+       $bytes++;
+    }
   return arrayToString($output,$bytes);
 }
 
@@ -141,58 +167,58 @@ function base32_decode ($input,$outputLength)
 /* from encoder.php */
 function base32_encoder_last_quintet($length)
 {
-	$quintets = intval($length * 8 / 5);
-	$remainder = $length % 5;
-	if ($remainder!=0) {
-		$quintets++;		
-	}
-	return $quintets;
+    $quintets = intval($length * 8 / 5);
+    $remainder = $length % 5;
+    if ($remainder!=0) {
+        $quintets++;        
+    }
+    return $quintets;
 }
 
 function ord_value($buffer, $offset) 
 {
-  	return ord(substr($buffer,$offset,1));
+    return ord(substr($buffer,$offset,1));
 }
 
 function base32_encoder_encode_bits($position, $buffer)
 {
-	$offset = intval(($position / 8)) * 5;
-	switch ($position % 8) {
-		case 0:
-			return ((ord_value($buffer,$offset) & 0xF8) >> 3);
-		 case 1:
-		      return
-		        ((ord_value($buffer,$offset) & 0x07) << 2) +
-		        ((ord_value($buffer,$offset+1) & 0xC0) >> 6);
+    $offset = intval(($position / 8)) * 5;
+    switch ($position % 8) {
+        case 0:
+            return ((ord_value($buffer,$offset) & 0xF8) >> 3);
+         case 1:
+              return
+                ((ord_value($buffer,$offset) & 0x07) << 2) +
+                ((ord_value($buffer,$offset+1) & 0xC0) >> 6);
 
-		    case 2:
-		      return
-		        ((ord_value($buffer,$offset+1) & 0x3E) >> 1);
+            case 2:
+              return
+                ((ord_value($buffer,$offset+1) & 0x3E) >> 1);
 
-		    case 3:
-		      return
-		        ((ord_value($buffer,$offset+1) & 0x01) << 4) +
-		        ((ord_value($buffer,$offset+2) & 0xF0) >> 4);
+            case 3:
+              return
+                ((ord_value($buffer,$offset+1) & 0x01) << 4) +
+                ((ord_value($buffer,$offset+2) & 0xF0) >> 4);
 
-		    case 4:
-		      return
-		        ((ord_value($buffer,$offset+2) & 0x0F) << 1) +
-		        ((ord_value($buffer,$offset+3) & 0x80) >> 7);
+            case 4:
+              return
+                ((ord_value($buffer,$offset+2) & 0x0F) << 1) +
+                ((ord_value($buffer,$offset+3) & 0x80) >> 7);
 
-		    case 5:
-		      return
-		        ((ord_value($buffer,$offset+3) & 0x7C) >> 2);
+            case 5:
+              return
+                ((ord_value($buffer,$offset+3) & 0x7C) >> 2);
 
-		    case 6:
-		      return
-		        ((ord_value($buffer,$offset+3) & 0x03) << 3) +
-		        ((ord_value($buffer,$offset+4) & 0xE0) >> 5);
+            case 6:
+              return
+                ((ord_value($buffer,$offset+3) & 0x03) << 3) +
+                ((ord_value($buffer,$offset+4) & 0xE0) >> 5);
 
-		    case 7:
-		      return
-		        ord_value($buffer,$offset+4) & 0x1F;
-		    
-	}
+            case 7:
+              return
+                ord_value($buffer,$offset+4) & 0x1F;
+            
+    }
 }
 
 
@@ -205,11 +231,11 @@ function base32_encoder_encode_at_position ($position, $buffer)
 
 function encode($number)
 {
-	$quintets = base32_encoder_last_quintet(strlen($number));
-	$output = '';
-	for ($i=0; $i < $quintets;$i++) {
-		$output .= base32_encoder_encode_at_position($i,$number);
-	}
-	
-	return $output;
+    $quintets = base32_encoder_last_quintet(strlen($number));
+    $output = '';
+    for ($i=0; $i < $quintets;$i++) {
+        $output .= base32_encoder_encode_at_position($i,$number);
+    }
+    
+    return $output;
 }

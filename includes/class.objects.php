@@ -237,18 +237,9 @@
 				$name = $this->first_name . ' ' . $this->last_name;
 				$compositeLicenseCode = make_license_source($product_code,$name);
 				error_log("[$product_code] - [$name] -- [$compositeLicenseCode]");
-				openssl_sign($compositeLicenseCode, $signature, $priv, OPENSSL_ALGO_DSS1);
-				openssl_free_key($priv);
-				$len = strlen($signature);
-
-				$b32 = encode($signature);
-			  	// # Replace Os with 8s and Is with 9s
-			  	// # See http://members.shaw.ca/akochoi-old/blog/2004/11-07/index.html
-				$b32 =  str_replace('O', '8', $b32);
-				$b32 =  str_replace('I', '9', $b32);
-				$b32 = join("-",str_split($b32,5));
+				$license = make_phpFob_license($compositeLicenseCode, $priv);
 		
-				$this->license = $b32;
+				$this->license = $license;
 				$this->update();
 			}
 		
