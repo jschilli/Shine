@@ -56,7 +56,9 @@
         file_put_contents($tmp_file, $binary_hash);
 
         $key_tmp_file = tempnam('/tmp', 'bar');
-        file_put_contents($key_tmp_file, "-----BEGIN DSA PRIVATE KEY-----\n" . $keydata . "\n-----END DSA PRIVATE KEY-----\n");
+		if (strpos($keydata,"-----BEGIN DSA PRIVATE KEY-----\n") != 0)
+			$keydata = "-----BEGIN DSA PRIVATE KEY-----\n" . $keydata . "\n-----END DSA PRIVATE KEY-----\n";
+        file_put_contents($key_tmp_file, $keydata);
 
         $signed_data = shell_exec("openssl dgst -dss1 -sign $key_tmp_file < $hash_tmp_file");
 
