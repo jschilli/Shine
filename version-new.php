@@ -27,7 +27,7 @@
 			$object = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $app->name)) . "_" . $v->version_number . "." . substr($_FILES['file']['name'], -3);
 			$v->url = slash($app->s3path) . $object;
 			$info   = parse_url($app->s3path);
-			$object = slash($info['path']) . $object;
+			$object = ltrim(slash($info['path']) . $object,'/');
 			chmod($_FILES['file']['tmp_name'], 0755);
 			$s3 = new S3($app->s3key, $app->s3pkey);
 			$s3->uploadFile($app->s3bucket, $object, $_FILES['file']['tmp_name'], true);
