@@ -25,13 +25,14 @@
     $o->mc_currency       = $_POST['mc_currency']; // custom
     $o->payment_gross     = preg_replace('/[^0-9.]/', '', $_POST['payment_gross']); // custom
     $o->mc_gross          = $o->payment_gross;
+	$o->license			  = $_POST['license']; // custom - used for cocoafob 
 
     $o->app_id = $app->id;
     $o->dt = dater();
     $o->type = 'FastSpring';
     $o->insert();
 
-    $o->generateLicense();
+    // $o->generateLicense();
     // $o->emailLicense();
 
     // These are the fields and values you'll need to setup in FastSpring's
