@@ -43,6 +43,8 @@ CREATE TABLE `applications` (
   'cf_product_code' varchar(45) NOT NULL,
   'cf_license_url' varchar(45) NOT NULL,
   'of_email_notification' varchar(128) NOT NULL
+  'fs_license_key' varchar(45) DEFAULT NULL;
+
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=7 ;
 

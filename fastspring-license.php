@@ -4,6 +4,9 @@
 * We'll generate the license here (protects us from embedding our private key @ FastSpring)
 * We'll configure FastSpring to send it back to us with the completed order @ which time we'll add 
 * it to the order
+* 
+* Note: There are multiple security keys in FastSpring - the license request has a distinct key from the order
+* notification request
 */
     require 'includes/master.inc.php';
 
@@ -16,7 +19,7 @@
     }
     
     // FastSpring security check...
-    if(md5($_REQUEST['security_data'] . $app->fs_security_key) != $_REQUEST['security_hash'])
+    if(md5($_REQUEST['security_data'] . $app->fs_license_key) != $_REQUEST['security_hash'])
         die('Security check failed.');
     
 

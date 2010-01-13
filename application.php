@@ -37,6 +37,7 @@
 			$app->cf_product_code  = $_POST['cf_product_code'];
 			$app->cf_license_url   = $_POST['cf_license_url'];
 			$app->of_email_notify  = $_POST['of_email_notify'];
+			$app->fs_license_key   = $_POST['fs_license_key'];
 			
 			$app->update();
 			redirect('application.php?id=' . $app->id);
@@ -67,6 +68,7 @@
 			$cf_product_code  = $_POST['cf_product_code'];
 			$cf_license_url   = $_POST['cf_license_url'];
 			$of_email_notify  = $_POST['of_email_notify'];
+			$fs_license_key   = $_POST['fs_license_key'];
 		}
 	}
 	else
@@ -95,6 +97,7 @@
 		$cf_product_code  = $app->cf_product_code;
 		$cf_license_url   = $app->cf_license_url;
 		$of_email_notify  = $app->of_email_notify;
+		$fs_license_key   = $app->fs_license_key;
 		
 	}
 ?>
@@ -249,6 +252,13 @@
                                 <p>
                                     <label for="return_url">Item Notification Security Key</label>
                                     <input type="text" class="text" name="fs_security_key" value="<?PHP echo $fs_security_key; ?>" id="fs_security_key">
+									<span class="info">Security key from FastSpring used for order notifications</span>
+                                </p>                                
+
+                                <p>
+                                    <label for="fs_license_key">License Request Security Key</label>
+                                    <input type="text" class="text" name="fs_license_key" value="<?PHP echo $fs_license_key; ?>" id="fs_license_key">
+									<span class="info">Security key from FastSpring used for requests (used with CocoaFob)</span>
                                 </p>                                
 
                                 <hr>
