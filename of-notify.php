@@ -1,8 +1,9 @@
 <?PHP
 	require 'includes/master.inc.php';
-	
+	require('Mail.php');
+	require('Mail/mime.php');
 	error_log(print_r($_POST, true));
-error_log($_SERVER['REQUEST_URI']);
+	
 	$db = Database::getDatabase();
 
 	foreach($_POST as $key => $val)
@@ -29,17 +30,42 @@ error_log($_SERVER['REQUEST_URI']);
 	mysql_query($query, $db->db) or die('error');
 	$feedback_id = $db->insertId();
 	
-
-	$app_id = DBObject::glob('Application', "SELECT id FROM applications WHERE name = '{$_POST['appname']}' ");
-	$app = new Application($app_id);
-	// if (!is_null($app->of_email_notify)) {
-		// Format email to external system
-		$full_url = full_url_for_page('feedback-view.php');
-		$message  = "{$_POST['type']} case: " . "$full_url?id=$feedback_id \n";
-		$message .= "Message: {$_POST['message']}\n";
-
-		error_log($message);
-	// }
+	$app_id = $db->getValue("SELECT id FROM applications WHERE name = '{$_POST['appname']}' LIMIT 1");
 	
+	$app = new Application($app_id);
+	error_log("$app_id name:$app->name");
+	if (eregi('^[a-zA-Z0-9._-]+@[a-zA-Z0-9-]+\.[a-zA-Z.]{2,5}$', $_POST['email'])) {
+	    $email = $_POST['email'];
+	} else {    
+        $email = $app->of_email_notify;
+    }
 
-	echo "ok";
+	// Format email to external system
+	$full_url = full_url_for_page('feedback-view.php');
+	$message  = "{$_POST['type']} case: " . "<a href=\"$full_url?id=$feedback_id\">Feedback $feedback_id</a> \n";
+	$message .= "Message: {$_POST['message']}\n";
+
+
+		
+	$html = "<html><body>" . $message . "</body></html>";
+		
+	$crlf = "\n";
+	$hdrs = array(
+	              'From'    => $email,
+	              'Subject' => "Feedback for $app->name"
+	              );
+	$mime = new Mail_mime($crlf);
+
+	$mime->setTXTBody($message);
+	$mime->setHTMLBody($html);
+
+	//do not ever try to call these lines in reverse order
+	$body = $mime->get();
+	$hdrs = $mime->headers($hdrs);
+error_log("to: $email from: $app->of_email_notify message: $message");
+	$smtp =& Mail::factory('smtp', array('host' => SMTP_HOST, 'port' => SMTP_PORT, 'auth' => true, 'username' => SMTP_USERNAME, 'password' => SMTP_PASSWORD));
+	$mail = $smtp->send($app->of_email_notify, $hdrs, $body);
+
+	if (PEAR::isError($mail))
+	  error_log($mail->getMessage());
+?>
