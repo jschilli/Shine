@@ -1,9 +1,51 @@
 <?PHP
 	require 'includes/master.inc.php';
-	require('Mail.php');
-	require('Mail/mime.php');
-	error_log(print_r($_POST, true));
+	// error_log(print_r($_POST, true));
+	//     error_log($_SERVER['REQUEST_URI']);
 	
+	
+	// an ounce of prevention...
+	function cleanerString($input)
+	{
+		if (empty($input))
+			return '';
+
+		$badStuph = array('to:', 'cc:', 'bcc:', 'from:', 'return-path:', 'content-type:', 'mime-version:', 'multipart-mixed:', 'content-transfer-encoding:');
+
+		// if any bad things are found don't use the input at all (as there may be other unknown bad things)
+		foreach ($badStuph as $badThing)
+			if (stripos($input, $badThing) !== false)
+				return 'Found bad things';
+
+		// these aren't technically bad things by themselves, but clean them up for good measure
+		$input = str_replace(array("\r", "\n", "%0a", "%0d"), ' ', $input);
+		return trim($input);
+	}
+
+	// Don't put user submitted email addresses in the From or Return-Path headers,
+	// if your mail server is down it will bounce back to that address.
+	// A malicious person could send spam that way.
+	// Better to use an account at a seperate email provider so you won't miss a report.
+	function sendReport($from, $subject, $message)
+	{
+		$from = cleanerString($from);
+		$to       = 'support+tickets@manicwave.com';
+		$from     = $from;
+		$headers  = "From: {$from}\r\n";
+		$headers .= "Return-Path: {$from}\r\n";
+		$headers .= "MIME-Version: 1.0\r\n";
+		$headers .= "Content-Type: text/html; charset=\"utf-8\"\r\n";
+
+		if (empty($message))
+			$message = 'There is no message';
+
+		$subject = cleanerString($subject);
+		if (empty($subject))
+			$subject = 'There is no subject';
+	
+		return mail($to, $subject, $message, $headers);
+	}
+
 	$db = Database::getDatabase();
 
 	foreach($_POST as $key => $val)
@@ -30,42 +72,32 @@
 	mysql_query($query, $db->db) or die('error');
 	$feedback_id = $db->insertId();
 	
-	$app_id = $db->getValue("SELECT id FROM applications WHERE name = '{$_POST['appname']}' LIMIT 1");
-	
+
+	$app_id = DBObject::glob('Application', "SELECT id FROM applications WHERE name = '{$_POST['appname']}' ");
 	$app = new Application($app_id);
-	error_log("$app_id name:$app->name");
+	// if (!is_null($app->of_email_notify)) {
+		// Format email to external system
+		$full_url = full_url_for_page('feedback-view.php');
+		$message  = "{$_POST['type']} case: " . "$full_url?id=$feedback_id \r\n";
+		$message .= "Message: {$_POST['message']}\r\n";
+		$message .= "Importance: {$_POST['importance']}\r\n";
+		$message .= "Application Name: {$_POST['appname']}\r\n";
+       	$message .= "Version:{$_POST['appversion']}\r\n";
+       	$message .= "System Version:{$_POST['systemversion']}\r\n";
+       	$message .= "Type:{$_POST['type']}\r\n";
+       	$message .= "Message:{$_POST['message']}\r\n";
+       	$message .= "Importance:{$_POST['importance']}\r\n";
+       	$message .= "Criticality:{$_POST['critical']}\r\n";
+
 	if (eregi('^[a-zA-Z0-9._-]+@[a-zA-Z0-9-]+\.[a-zA-Z.]{2,5}$', $_POST['email'])) {
 	    $email = $_POST['email'];
 	} else {    
-        $email = $app->of_email_notify;
-    }
+           $email = 'support@manicwave.com';
+    	}
+	
+	sendReport($email,"Feedback from {$app->name}",$message);
+	// }
+	
 
-	// Format email to external system
-	$full_url = full_url_for_page('feedback-view.php');
-	$message  = "{$_POST['type']} case: " . "<a href=\"$full_url?id=$feedback_id\">Feedback $feedback_id</a> \n";
-	$message .= "Message: {$_POST['message']}\n";
-
-
-		
-	$html = "<html><body>" . $message . "</body></html>";
-		
-	$crlf = "\n";
-	$hdrs = array(
-	              'From'    => $email,
-	              'Subject' => "Feedback for $app->name"
-	              );
-	$mime = new Mail_mime($crlf);
-
-	$mime->setTXTBody($message);
-	$mime->setHTMLBody($html);
-
-	//do not ever try to call these lines in reverse order
-	$body = $mime->get();
-	$hdrs = $mime->headers($hdrs);
-error_log("to: $email from: $app->of_email_notify message: $message");
-	$smtp =& Mail::factory('smtp', array('host' => SMTP_HOST, 'port' => SMTP_PORT, 'auth' => true, 'username' => SMTP_USERNAME, 'password' => SMTP_PASSWORD));
-	$mail = $smtp->send($app->of_email_notify, $hdrs, $body);
-
-	if (PEAR::isError($mail))
-	  error_log($mail->getMessage());
+	echo "ok";
 ?>
